@@ -32,4 +32,3 @@ for i in files:
 		out_file = open(args.output + "/" + i[:len(i)-4] + "_e35918rs.txt",'w')
 		out_file.write(str(scores[0])+":"+str(scores[1]))
 		out_file.close()
-	print("SUCCESS")
