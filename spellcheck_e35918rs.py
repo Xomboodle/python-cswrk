@@ -66,7 +66,7 @@ def writeFormat(format_display, file):
 	except:
 		os.mkdir(args.output)
 		out_file = open(path_end + file[:len(file)-4] + "_e35918rs.txt", 'w')
-	out_file.writelines(["Formatting ###################",
+	out_file.writelines(["e35918rs","\nFormatting ###################",
 							"\nNumber of upper case words changed: " + str(format_display[0]),
 							"\nNumber of punctuations removed: " + str(format_display[1]),
 							"\nNumber of numbers removed: " + str(format_display[2]),
