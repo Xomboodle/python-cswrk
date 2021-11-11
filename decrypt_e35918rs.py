@@ -51,6 +51,10 @@ if args.input[-1] == "/":
 	path_start = args.input
 else:
 	path_start = args.input + "/"
+if args.input[-1] == "/":
+	path_end = args.output
+else:
+	path_end = args.output + "/"
 for i in files:
 
 	with open(path_start + i,'r') as file:
@@ -65,17 +69,11 @@ for i in files:
 		decrypted = decryptMorse(to_encrypt).lower()
 
 	try:
-		if args.output[0] != "/":
-			out_file = open(args.output + "/" + i[:len(i)-4] + "_e35918rs.txt",'w')
-		else:
-			out_file = open(args.output + i[:len(i)-4] + "_e35918rs.txt",'w')
+		out_file = open(path_end + i[:len(i)-4] + "_e35918rs.txt",'w')
 		out_file.write(decrypted)
 		out_file.close()
 	except:
 		os.mkdir(args.output)
-		if args.output[0] != "/":
-			out_file = open(args.output + "/" + i[:len(i)-4] + "_e35918rs.txt",'w')
-		else:
-			out_file = open(args.output + i[:len(i)-4] + "_e35918rs.txt",'w')
+		out_file = open(path_end + i[:len(i)-4] + "_e35918rs.txt",'w')
 		out_file.write(decrypted)
 		out_file.close()
