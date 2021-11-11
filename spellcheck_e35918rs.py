@@ -11,18 +11,14 @@ punct_list = [".",",","!",'"',"'","?","-",":",";","[","]","(",")","{","}","/","@
 def oneLineCheck(words):
 	with open(args.engwords,'r') as checkfile:
 		checkers = checkfile.read()
-	checkers.splitlines()
+	checkers = checkers.splitlines()
 	punct_removed = num_removed = case_changed = correct_words = incorrect_words = 0
 	words = words.split(" ")
 	words_in_file = len(words)
 	for word in words:
-		print(word)
 		formatted = word.translate({ord(c):None for c in punct_list})
-		print(formatted)
 		punct_removed += len(word) - len(formatted)
-		print(len(formatted))
 		num_formatted = formatted.translate({ord(c):None for c in "1234567890"})
-		print(len(num_formatted))
 		num_removed += len(formatted) - len(num_formatted)
 		for c in num_formatted:
 			char_formatted = c.lower()
@@ -35,6 +31,7 @@ def oneLineCheck(words):
 			correct_words += 1
 		else:
 			incorrect_words += 1
+
 	return [case_changed, punct_removed, num_removed, words_in_file, correct_words, incorrect_words]
 
 def multiLineCheck(words):
@@ -90,7 +87,6 @@ for i in files:
 	with open(path_start + i, 'r') as file:
 		words = file.read()
 
-	print(type(words))
 	words = words.split('\n')
 	if len(words) == 1:
 		format_display = oneLineCheck(words[0])
