@@ -4,6 +4,7 @@ import random as r
 
 window = Tk()
 window.title("Mad Dash")
+# SCREEN RESOLUTION #
 window.geometry("1920x1080")
 width = 1920
 height = 1080
@@ -37,8 +38,14 @@ def create_canvas():
 			x += r.randint(30,90)
 		x = 0
 		y += r.randint(30, 90)
+	to_remove = []
 	for i in rocks:
 		canvas.move(i, -30, 0)
+		if (canvas.coords(i)[0] + 120) <= 0:
+			to_remove.append(rocks.index(i))
+	for i in to_remove:
+		del rocks[i]
+
 
 def canvas_deletion():
 	canvas.delete('player')
@@ -50,6 +57,12 @@ def keypress(e):
 		if jumptimer == 0:
 			canvas.create_image(120, height // 2 - 120, image=playerImages[3], tags='playerjump')
 			jumptimer += 1
+
+def collisionTest():
+	global run, jumptimer
+	player_x = 120
+	if (canvas.coords(rocks[0])[0] <= (player_x + 60)) and (canvas.coords(rocks[0])[0] + 120 >= (player_x + 120)) and (jumptimer == 0):
+		run = False
 
 test = canvas.create_image(120,height // 2 - 60, image=playerImages[0], tags='player')
 player_image_used = 0
@@ -91,6 +104,8 @@ while run:
 				canvas.create_image(120, height // 2 - 60, image=playerImages[player_image_used], tags='player')
 
 		create_canvas()
+		if len(rocks) >= 1:
+			collisionTest()
 	window.protocol("WM_DELETE_WINDOW", on_closing)
 	window.update()
 
