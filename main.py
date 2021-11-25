@@ -11,13 +11,13 @@ height = 1080
 #-------------------#
 
 #- Global Variables -#
-global run, jumptimer, score, timer, max_timer, pause_game, initial, canvas, pause_canvas, start_canvas
+global run, jumptimer, score, timer, max_timer, pause_game, initial, initial_boss, canvas, pause_canvas, start_canvas, boss_canvas, cheating, boss_key
 jumptimer = score = timer = 0
 max_timer = 1000
-pause_game = False
-initial = True
+pause_game = cheating = boss_key = False
+initial = initial_boss = True
 canvas = Canvas(window, bg="white", width=width, height=height)
-pause_canvas = start_canvas = None
+pause_canvas = start_canvas = boss_canvas = None
 #--------------------#
 
 #- Other Variables -#
@@ -32,6 +32,7 @@ playerImages = [PhotoImage(file="Images/player1.png"), PhotoImage(file="Images/p
 ground = PhotoImage(file="Images/ground.png")
 underground = PhotoImage(file="Images/underground.png")
 jumprock = PhotoImage(file="Images/jumprock.png")
+boss_image = PhotoImage(file="Images/boss.png")
 #-----------------#
 
 #- Subroutines -#
@@ -40,6 +41,13 @@ def onClosing():
 	if messagebox.askokcancel("Quit", "Are you sure you want to quit?"):
 		window.destroy()
 		run = False
+
+def bossKey(event):
+	global boss_key
+	if boss_key:
+		boss_key = False
+	else:
+		boss_key = True
 
 def createCanvas():
 	global score, max_timer
@@ -67,9 +75,12 @@ def createCanvas():
 			max_timer -= 50
 
 def canvasDeletion():
+	global cheating
 	canvas.delete('player')
 	canvas.delete('grounds')
 	canvas.delete('score')
+	if not cheating:
+		canvas.delete('cheating')
 
 def keypress(e):
 	global jumptimer
@@ -79,9 +90,9 @@ def keypress(e):
 			jumptimer += 1
 
 def collisionTest():
-	global run, jumptimer
+	global run, jumptimer, cheating
 	player_x = 120
-	if (canvas.coords(rocks[0])[0] <= (player_x + 60)) and (canvas.coords(rocks[0])[0] + 120 >= (player_x + 120)) and (jumptimer == 0):
+	if (canvas.coords(rocks[0])[0] <= (player_x + 60)) and (canvas.coords(rocks[0])[0] + 120 >= (player_x + 120)) and (jumptimer == 0) and not cheating:
 		run = False
 		recordScore()
 		rocks.clear()
@@ -97,21 +108,65 @@ def pause(event=None):
 	else:
 		pause_game = True
 
+def cheater():
+	
+	def checkCheat():
+		global cheating
+		code = ent_code.get()
+		if code == "invincible":
+			cheating = True
+		elif code == "disable":
+			cheating = False
+		cheat_window.destroy()
+	cheat_window = Tk()
+	cheat_window.title("Become a cheater")
+	cheat_window.geometry("400x75")
+	text = Label(cheat_window, text="Enter code", font=('',16))
+	text.pack()
+	ent_code = Entry(cheat_window, width=10)
+	ent_code.pack()
+	but_submit = Button(cheat_window, text="Enter", command=checkCheat)
+	but_submit.pack()
+
 def pauseMenu():
-	global initial, pause_canvas
+	global initial, initial_boss, pause_canvas
+
+
 	if initial:
 		initial = False
 		pause_canvas = Canvas(window, bg="white", width=width, height=height)
 		pause_canvas.create_text(width // 2 - 30, 40, text="PAUSED", font=('Franklin Gothic Medium', 24))
-		but_resume = Button(pause_canvas, text="Resume", width=15, height=2, command=pause)
-		but_resume.config(font=('Franklin Gothic Medium', 24))
+		but_resume = Button(pause_canvas, text="Resume", width=15, height=2, font=('', 24), command=pause)
 		but_resume.place(x=width // 3 + 140, y=height // 4)
+		but_cheat = Button(pause_canvas, text="Cheat", width=15, height=2, font=('', 24), command=cheater)
+		but_cheat.place(x=width // 3 + 140, y=height // 4 + 120)
 		canvas.pack_forget()
 		pause_canvas.bind("<Escape>", pause)
 		pause_canvas.pack()
-	return
+	if not initial_boss:
+		initial_boss = True
+		pause_canvas.pack()
+		try:
+			boss_canvas.pack_forget()
+		except:
+			pass
+
+
+def showBossKey():
+	global initial_boss, boss_canvas
+	canvas.pack_forget()
+	try:
+		pause_canvas.pack_forget()
+	except:
+		pass
+	if initial_boss:
+		initial_boss = False
+		boss_canvas = Canvas(window, width=width, height=height)
+		boss_canvas.create_image(width // 2, height // 2, image=boss_image)
+		boss_canvas.pack()
 
 def recordScore():
+
 	def writeToLeaderboard():
 		characters = ent_initials.get()
 		while len(characters) < 3:
@@ -132,10 +187,10 @@ def recordScore():
 	but_initials.pack()
 
 def mainGame():
-	global run, jumptimer, score, timer, max_timer, initial, start_canvas, canvas
+	global run, jumptimer, score, timer, max_timer, initial, initial_boss, start_canvas, canvas, cheating, boss_key
 	score = 0
 	run = True
-	max_timer = 1000
+	max_timer = 2000
 	start_canvas.pack_forget()
 	canvas.create_image(120,height // 2 - 60, image=playerImages[0], tags='player')
 	player_image_used = 0
@@ -148,21 +203,33 @@ def mainGame():
 	window.update()
 
 	while run:
-		if pause_game:
-			pauseMenu()
+		if pause_game or boss_key:
+			if pause_game:
+				pauseMenu()
+			if boss_key:
+				showBossKey()
 		else:
-			if not initial:
-				initial = True
+			if not initial or not initial_boss:
+				if not initial: initial = True
+				if not initial_boss: initial_boss = True
 				canvas.pack()
 				try:
 					pause_canvas.destroy()
 				except:
 					pass
+
+				try:
+					boss_canvas.destroy()
+				except:
+					pass
+
 			timer += 1
 			if timer == max_timer:
 				timer = 0
 				canvasDeletion()
 				canvas.create_text(width // 2, 30, text="Score: " + str(score), font=('Franklin Gothic Medium', 16), tags='score')
+				if cheating:
+					canvas.create_text(width // 2, 60, text="Cheating", font=('',16), tags='cheating')
 				rock = r.randint(1,10)
 				if rock == 1 and (len(rocks) == 0 or canvas.coords(rocks[-1])[0] < (width - 320)):
 					rocks.append(canvas.create_image(width, height // 2 - 60, image=jumprock, tags='rock'))
@@ -234,15 +301,14 @@ def startMenu():
 #---------------#
 
 window.protocol("WM_DELETE_WINDOW", onClosing)
+window.bind("b", bossKey)
 startMenu()
 window.mainloop()
 
 
 #-------TO DO-------#
 # Add Save/Load 	#
-# Add cheat code 	#
-# Add boss key 		#
-# Add leaderboard 	#
+# Customise keybind	#
 #-------------------#
 
 
