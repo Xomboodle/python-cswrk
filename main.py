@@ -11,13 +11,14 @@ height = 1080
 #-------------------#
 
 #- Global Variables -#
-global run, jumptimer, score, timer, max_timer, pause_game, initial, initial_boss, canvas, pause_canvas, start_canvas, boss_canvas, cheating, boss_key
+global run, jumptimer, score, timer, max_timer, pause_game, initial, initial_boss, canvas, pause_canvas, start_canvas, boss_canvas, cheating, boss_key, user_key, loaded
 jumptimer = score = timer = 0
 max_timer = 1000
-pause_game = cheating = boss_key = False
+pause_game = cheating = boss_key = loaded = False
 initial = initial_boss = True
 canvas = Canvas(window, bg="white", width=width, height=height)
 pause_canvas = start_canvas = boss_canvas = None
+user_key = "w"
 #--------------------#
 
 #- Other Variables -#
@@ -83,8 +84,8 @@ def canvasDeletion():
 		canvas.delete('cheating')
 
 def keypress(e):
-	global jumptimer
-	if e.char == "w":
+	global jumptimer, user_key
+	if e.char == user_key:
 		if jumptimer == 0:
 			canvas.create_image(120, height // 2 - 120, image=playerImages[3], tags='playerjump')
 			jumptimer += 1
@@ -130,6 +131,12 @@ def cheater():
 
 def pauseMenu():
 	global initial, initial_boss, pause_canvas
+	def save():
+		global score
+		if messagebox.askokcancel("Save Game", "Save Score? This will overwrite any previous save."):
+			with open("savegame.txt", 'w') as file:
+				file.write(str(score))
+			messagebox.showinfo("Game Saved", "Score successfully saved.")
 
 
 	if initial:
@@ -140,6 +147,8 @@ def pauseMenu():
 		but_resume.place(x=width // 3 + 140, y=height // 4)
 		but_cheat = Button(pause_canvas, text="Cheat", width=15, height=2, font=('', 24), command=cheater)
 		but_cheat.place(x=width // 3 + 140, y=height // 4 + 120)
+		but_save = Button(pause_canvas, text="Save", width=15, height=2, font=('',24), command=save)
+		but_save.place(x=width // 3 + 140, y=height // 4 + 240)
 		canvas.pack_forget()
 		pause_canvas.bind("<Escape>", pause)
 		pause_canvas.pack()
@@ -187,10 +196,14 @@ def recordScore():
 	but_initials.pack()
 
 def mainGame():
-	global run, jumptimer, score, timer, max_timer, initial, initial_boss, start_canvas, canvas, cheating, boss_key
-	score = 0
-	run = True
+	global run, jumptimer, score, timer, max_timer, initial, initial_boss, start_canvas, canvas, cheating, boss_key, loaded
 	max_timer = 2000
+	if loaded:
+		subtractions = score // 25
+		max_timer -= (50*subtractions)
+	else:
+		score = 0
+	run = True
 	start_canvas.pack_forget()
 	canvas.create_image(120,height // 2 - 60, image=playerImages[0], tags='player')
 	player_image_used = 0
@@ -287,6 +300,36 @@ def displayLeaderboard():
 
 def startMenu():
 	global start_canvas, canvas
+
+	def load():
+		global score, loaded
+		messagebox.showinfo("Game Loaded", "Game successfully loaded.")
+		with open('savegame.txt','r') as file:
+			score = int(file.read())
+			loaded = True
+
+	def changeKey():
+
+		def checkChange():
+			global user_key
+			check = entry.get()
+			if not check.isalpha():
+				messagebox.showinfo("Invalid", "Invalid key.")
+				return
+			user_key = check[0]
+			messagebox.showinfo("Changed", "Key successfully changed.")
+			control_window.destroy()
+
+
+		control_window = Tk()
+		control_window.title("Control")
+		label = Label(control_window, text="Enter key to change jump keybind.").pack()
+		label2 = Label(control_window, text="Only the first character will be accepted.").pack()
+		label3 = Label(control_window, text="Only alphabetic characters are accepted.").pack()
+		entry = Entry(control_window, width=2)
+		entry.pack()
+		button = Button(control_window, text="Change", command=checkChange).pack()
+
 	if start_canvas == None:
 		start_canvas = Canvas(window, bg="white", width=width, height=height)
 		start_canvas.create_text(width // 2 - 20, 40, text="MAD DASH", font="Times 32")
@@ -294,8 +337,12 @@ def startMenu():
 		but_start.place(x=width // 3 + 140, y=height // 4)
 		but_leader = Button(start_canvas, text="Leaderboard", width=20, height=2, font=('',16), command=displayLeaderboard)
 		but_leader.place(x=width // 3 + 140, y=height // 4 + 100)
+		but_load = Button(start_canvas, text="Load Game", width=20, height=2, font=('',16), command=load)
+		but_load.place(x=width // 3+ 140, y=height // 4 + 200)
+		but_control = Button(start_canvas, text="Control", width=20, height=2, font=('',16), command=changeKey)
+		but_control.place(x=width // 3 + 140, y=height // 4 + 300)
 		but_quit = Button(start_canvas, text="Quit", width=20, height=2, font=('',16), command=onClosing)
-		but_quit.place(x=width // 3 + 140, y=height // 2)
+		but_quit.place(x=width // 3 + 140, y=height // 4 + 400)
 	start_canvas.pack()
 
 #---------------#
@@ -306,9 +353,5 @@ startMenu()
 window.mainloop()
 
 
-#-------TO DO-------#
-# Add Save/Load 	#
-# Customise keybind	#
-#-------------------#
 
 
