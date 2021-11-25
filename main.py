@@ -34,7 +34,7 @@ global initial, initial_boss
 initial = initial_boss = True
 
 global canvas
-canvas = Canvas(window, bg="white", width=width, height=height)
+canvas = Canvas(window, bg="#E1B460", width=width, height=height)
 
 global pause_canvas, start_canvas, boss_canvas
 pause_canvas = start_canvas = boss_canvas = None
@@ -164,7 +164,7 @@ def pauseMenu():
 
 			messagebox.showinfo("Game Saved", "Score successfully saved.")
 
-	global initial, initial_boss, pause_canvas
+	global initial, initial_boss, pause_canvas, boss_key
 
 	if initial:
 		initial = False
@@ -180,7 +180,7 @@ def pauseMenu():
 		pause_canvas.bind("<Escape>", pause)
 		pause_canvas.pack()
 
-	if not initial_boss:
+	if not initial_boss and not boss_key:
 		initial_boss = True
 		pause_canvas.pack()
 
@@ -430,8 +430,9 @@ def startMenu():
 			global user_key
 
 			check = entry.get()
-			if not check.isalpha():
+			if not check.isalpha() or check[0] == "b":
 				messagebox.showinfo("Invalid", "Invalid key.")
+				control_window.destroy()
 				return
 			user_key = check[0]
 			messagebox.showinfo("Changed", "Key successfully changed.")
