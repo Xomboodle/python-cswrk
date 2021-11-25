@@ -164,18 +164,22 @@ def pauseMenu():
 
 			messagebox.showinfo("Game Saved", "Score successfully saved.")
 
-	global initial, initial_boss, pause_canvas, boss_key
+	global boss_key, initial, initial_boss, pause_canvas
 
 	if initial:
 		initial = False
 		pause_canvas = Canvas(window, bg="white", width=width, height=height)
 		pause_canvas.create_text(width // 2 - 30, 40, text="PAUSED", font=('Franklin Gothic Medium', 24))
+
 		but_resume = Button(pause_canvas, text="Resume", width=15, height=2, font=('', 24), command=pause)
 		but_resume.place(x=width // 3 + 140, y=height // 4)
+
 		but_cheat = Button(pause_canvas, text="Cheat", width=15, height=2, font=('', 24), command=cheater)
 		but_cheat.place(x=width // 3 + 140, y=height // 4 + 120)
+
 		but_save = Button(pause_canvas, text="Save", width=15, height=2, font=('',24), command=save)
 		but_save.place(x=width // 3 + 140, y=height // 4 + 240)
+
 		canvas.pack_forget()
 		pause_canvas.bind("<Escape>", pause)
 		pause_canvas.pack()
@@ -285,8 +289,7 @@ def canvasDeletion():
 
 # Displays the game #
 def mainGame():
-	global run, jumptimer, score, timer, max_timer, initial, initial_boss, start_canvas, canvas, cheating, boss_key, loaded
-
+	global run, jumptimer, score, timer, max_timer, cheating, boss_key, loaded, initial, initial_boss, canvas, start_canvas 
 	max_timer = 2000
 	if loaded:
 		subtractions = score // 25
@@ -369,8 +372,6 @@ def mainGame():
 			pass
 
 
-
-
 # Displays the leaderboard #
 def displayLeaderboard():
 
@@ -450,7 +451,7 @@ def startMenu():
 
 		button = Button(control_window, text="Change", command=checkChange).pack()
 
-	global start_canvas, canvas
+	global canvas, start_canvas
 
 	if start_canvas == None:
 		start_canvas = Canvas(window, bg="white", width=width, height=height)
